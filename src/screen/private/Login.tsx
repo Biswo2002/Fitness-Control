@@ -1,16 +1,16 @@
 import { Dimensions, StyleSheet } from 'react-native';
 import React, { useState } from 'react';
 import {
-    Box,
+    ScrollView,
+    Pressable,
+    Heading,
     Center,
     HStack,
-    Heading,
-    Icon,
     Image,
     Input,
-    Pressable,
-    ScrollView,
-    Text
+    Icon,
+    Text,
+    Box,
 } from 'native-base';
 import { IMAGES } from '../../assets';
 
