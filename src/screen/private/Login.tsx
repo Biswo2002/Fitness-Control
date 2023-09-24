@@ -1,7 +1,16 @@
-import { Dimensions, StyleSheet } from 'react-native';
-import React, { useState } from 'react';
 import {
+    Animated,
+    FlatList,
+    StyleSheet,
+    View,
+    Dimensions,
     ScrollView,
+    VirtualizedList,
+    Easing,
+} from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+
+import {
     Pressable,
     Heading,
     Center,
@@ -13,38 +22,89 @@ import {
     Box,
 } from 'native-base';
 import { IMAGES } from '../../assets';
+import { useNavigation } from '@react-navigation/native';
 
 const Login = () => {
     const HEIGHT = Dimensions.get('window').height;
+    const { navigate } = useNavigation<any>();
     const WIDTH = Dimensions.get('window').width;
     const [show, setShow] = useState(false);
+
+    const images = [
+        {
+            id: '1',
+            uri: 'https://img.freepik.com/free-vector/people-gym_52683-4075.jpg?w=996&t=st=1695493886~exp=1695494486~hmac=a3a0ddbc4deeb1465f6ce20523375daf1a07fccbd0bd4d159f1bf46587f142ed',
+        },
+        {
+            id: '2',
+            uri: 'https://img.freepik.com/free-vector/social-distance-gym_52683-41748.jpg?w=996&t=st=1695493934~exp=1695494534~hmac=9d43e1550277a944bf90281d15bd31320e570a617514baf72124d7f85c85fc7f',
+        },
+        {
+            id: '3',
+            uri: 'https://img.freepik.com/free-vector/young-man-exercising-fitness-gym-room-with-sport-equipment-workouts-guy-training-lifting-dumbbell-sitting-bench_575670-690.jpg?w=826&t=st=1695493990~exp=1695494590~hmac=d98fcf414b2492b6a75491b1659acf6b6494cdff5fdf1f758dba784bd2bbc7dc',
+        },
+        {
+            id: '4',
+            uri: 'https://img.freepik.com/premium-vector/people-exercising-fitness-gym-room-with-sport-equipment-workouts-with-woman-walking-treadmill-with-water-man-cycling-bike_575670-843.jpg?w=740',
+        },
+        {
+            id: '5',
+            uri: 'https://img.freepik.com/free-vector/couple-with-stroller-walking-suburban-cityscape-scene-modern-town-background-young-happy-man-woman-with-baby-horizontal-outdoor-recreation-scene_575670-2436.jpg?w=740&t=st=1695494042~exp=1695494642~hmac=c59c577ad680c58e42ab8c7cc04bc0831312af57b176a13ada5f40169482e56d',
+        },
+        // Add more images as needed
+    ];
+    const [currentPage, setCurrentPage] = useState(0);
+    const scrollX = useRef(new Animated.Value(0)).current;
+    const flatListRef = useRef<FlatList | null>(null);
+    const scrollDuration = 1000;
+
+    useEffect(() => {
+        const scrollInterval = setInterval(() => {
+            if (flatListRef.current) {
+                const newIndex = (currentPage + 1) % images.length;
+                setCurrentPage(newIndex);
+                flatListRef.current.scrollToIndex({
+                    index: newIndex,
+                    animated: true,
+                });
+            }
+        }, scrollDuration);
+
+        return () => clearInterval(scrollInterval);
+    }, [currentPage]);
+
+
+
+    const renderItem = ({ item, index }: { item: any; index: number }) => (
+        <Center
+            pb={2}
+            m={4}
+            key={item?.id}
+        >
+            <Image
+                source={{ uri: item?.uri }}
+                width={WIDTH / 1.08}
+                resizeMode="contain"
+                borderRadius={'50'}
+                height={HEIGHT / 2.5}
+                alt="BackGround"
+            />
+        </Center>
+    );
+
+
     return (
         <Box bg={'#EFF0F5'} flex={1} safeAreaTop>
-            <ScrollView
-                showsVerticalScrollIndicator={false}
-            >
-                <HStack
-                    justifyContent={'space-between'}
-                    mx={5}
-                >
-                    <Box mt={5} >
-                        <Heading
-                            fontSize={'24'}
-                            color={'violet.800'}
-                        >
+            <ScrollView showsVerticalScrollIndicator={false}>
+                <HStack justifyContent={'space-between'} mx={5}>
+                    <Box mt={5}>
+                        <Heading fontSize={'24'} color={'violet.800'}>
                             Fitness
                         </Heading>
-                        <Heading
-                            py={1}
-                            fontSize={'32'}
-                            color={'rose.700'}
-                        >
+                        <Heading py={1} fontSize={'32'} color={'rose.700'}>
                             You Wanna
                         </Heading>
-                        <Heading
-                            fontSize={'24'}
-                            color={'green.600'}
-                        >
+                        <Heading fontSize={'24'} color={'green.600'}>
                             Have
                         </Heading>
                     </Box>
@@ -58,18 +118,36 @@ const Login = () => {
                         alt="LOGO"
                     />
                 </HStack>
+                <FlatList
+                    ref={flatListRef}
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    data={images}
+                    keyExtractor={(item) => item.id}
+                    renderItem={renderItem}
+                    onScroll={(event) => {
+                        const offsetX = event.nativeEvent.contentOffset.x;
+                        const newIndex = Math.floor(offsetX / WIDTH / 1.08);
+                        setCurrentPage(newIndex);
+                    }}
+                />
+
                 <Center
-                    pb={2}
-                    my={4}
+                    flexDirection={'row'}
                 >
-                    <Image
-                        source={IMAGES.BG}
-                        width={WIDTH / 1}
-                        // resizeMode="contain"
-                        borderRadius={'50'}
-                        height={HEIGHT / 2.5}
-                        alt="LOGO"
-                    />
+                    {images.map((_, index) => (
+                        <View
+                            key={index}
+                            style={{
+                                width: 8,
+                                height: 8,
+                                borderRadius: 4,
+                                backgroundColor: index === currentPage ? 'blue' : 'gray', // Change colors as needed
+                                margin: 4,
+                            }}
+                        />
+                    ))}
                 </Center>
                 <Box
                     mx={4}
@@ -126,6 +204,7 @@ const Login = () => {
                         }
                         InputRightElement={
                             <Icon
+                                onPress={() => setShow(!show)}
                                 size={7}
                                 mr={4}
                                 as={
@@ -187,11 +266,12 @@ const Login = () => {
                             </Text>
                         </Pressable>
                     </HStack>
-                </Box>
+                </Box >
                 <Pressable
                     _pressed={{
-                        opacity: 0.4
+                        opacity: 0.2
                     }}
+                    onPress={() => navigate('Home')}
                 >
                     <Center
                         bg={{
@@ -217,11 +297,12 @@ const Login = () => {
                         />
                     </Center>
                 </Pressable>
-            </ScrollView>
-        </Box>
+            </ScrollView >
+        </Box >
     );
 };
 
 export default Login;
 
-const styles = StyleSheet.create({});
+
+

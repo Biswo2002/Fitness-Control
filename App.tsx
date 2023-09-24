@@ -1,4 +1,4 @@
-import { StatusBar, StyleSheet, Text, View } from 'react-native'
+import { StatusBar, StyleSheet } from 'react-native'
 import React from 'react'
 import Routes from './src/Routes'
 import { NavigationContainer } from '@react-navigation/native'
